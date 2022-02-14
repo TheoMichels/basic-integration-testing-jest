@@ -16,19 +16,36 @@ afterAll(async () => {
     closeConnection()
 })
 
+beforeEach(async () => {
+    const db = getDB()
+    await db.createCollection("todos")
+})
+
+afterEach(async () => {
+    const db = getDB()
+    await db.dropCollection("todos")
+})
+
 describe("GET /todos", () => {
     test("should respond with a 200 status code", async () => {
-        // TODO
-        fail("Not yet implemented")
+        const response = await request(app.callback()).get(baseUrl)
+        expect(response.statusCode).toBe(200)   
     })
 
     test("should respond with JSON", async () => {
-        // TODO
-        fail("Not yet implemented")
+        const response = await request(app.callback()).get(baseUrl)
+        expect(response.type).toBe("application/json")
     })
 
     test("should respond with list of existing todos", async () => {
-        // TODO
-        fail("Not yet implemented")
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        await db.collection("todos").insertOne(testTodo)
+        const response = await request(app.callback()).get(baseUrl)
+        todosBody = response.body
+        expect(todosBody.length).toBe(1)
+        todoToTest = todosBody[0]
+        expect(todoToTest.title).toBe("test")
+        expect(todoToTest.completed).toBe(false)
     })
 })
