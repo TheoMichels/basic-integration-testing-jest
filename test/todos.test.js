@@ -80,3 +80,22 @@ describe("POST /todos", () => {
         expect(response.statusCode).toBe(422)   
     })
 })
+
+describe("DELETE /todos", () => {
+    test("should respond with a 200 status code & good parameters", async () => {
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        const test_elem = await db.collection("todos").insertOne(testTodo)
+        const id = test_elem.insertedId.toString()
+
+        const response = await request(app.callback()).delete(baseUrl + "/" + id)
+
+        const list_todo = await db.collection("todos").find(query).toArray()
+
+        console.log(response.statusCode)
+        console.log(list_todo[0].title)
+
+        expect(response.statusCode).toBe(200)   
+        expect(list_todo.length).toBe(0)   
+    })
+})
