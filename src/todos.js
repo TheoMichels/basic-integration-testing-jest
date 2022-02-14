@@ -47,7 +47,36 @@ async function deleteTodo (ctx) {
 }
 
 async function updateTodo (ctx) {
-    // TODO
+    const id = ctx.request.params.id
+
+    const title = ctx.request.body.title
+    const completed = ctx.request.body.completed
+
+    if ((title === null || title === undefined || title == "") & (completed === null || completed === undefined || completed == "")) {
+        ctx.status = 422
+        ctx.body = { errorMsg: "Must have at least one parameter updated" }
+    }
+    else if ((title !== null || title !== undefined || title != "") & (completed === null || completed === undefined || completed == "")) {
+        const result = await getDB().collection("todos").updateOne(
+            {"_id" : ObjectId(id)},
+            {$set: { "title" : title}}
+        )        
+        ctx.body = { id: result.insertedId }
+    }
+    else if ((title === null || title === undefined || title == "") & (completed !== null || completed !== undefined || completed != "")) {
+        const result = await getDB().collection("todos").updateOne(
+            {"_id" : ObjectId(id)},
+            {$set: { "completed" : Boolean(completed)}}
+        )        
+        ctx.body = { id: result.insertedId }
+    }
+    else {
+        const result = await getDB().collection("todos").updateOne(
+            {"_id" : ObjectId(id)},
+            {$set: { "title" : title, "completed" : Boolean(completed)}}
+        )        
+        ctx.body = { id: result.insertedId }
+    }
 }
 
 module.exports = router

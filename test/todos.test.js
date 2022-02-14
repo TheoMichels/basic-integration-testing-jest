@@ -61,8 +61,6 @@ describe("POST /todos", () => {
         const db = getDB()
         const list_todo = await db.collection("todos").find(query).toArray()
 
-        console.log(response.statusCode)
-
         expect(response.statusCode).toBe(200)   
         expect(responseBody).toBeDefined()
         expect(responseBody.id).toBeDefined()
@@ -72,12 +70,10 @@ describe("POST /todos", () => {
     })
     test("should respond with a 422 status code when no title found", async () => {
         const response = await request(app.callback()).post(baseUrl)
-        console.log(response.statusCode)
         expect(response.statusCode).toBe(422)   
     })
     test("should respond with a 422 status code when empty title found", async () => {
         const response = await request(app.callback()).post(baseUrl).send("title=")
-        console.log(response.statusCode)
         expect(response.statusCode).toBe(422)   
     })
 })
@@ -95,9 +91,95 @@ describe("DELETE /todos", () => {
         const response = await request(app.callback()).delete(baseUrl + "/" + id)
         const list_todo_after_delete = await db.collection("todos").find(query).toArray()
 
-        console.log(response.statusCode)
-
         expect(response.statusCode).toBe(200)   
         expect(list_todo_after_delete.length).toBe(0)   
+    })
+})
+
+describe("PUT /todos", () => {
+    test("should respond with a 200 status code & both title and completed updated", async () => {
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        const test_elem = await db.collection("todos").insertOne(testTodo)
+        const id = test_elem.insertedId.toString()
+
+        const list_todo_before_update = await db.collection("todos").find(query).toArray()
+        expect(list_todo_before_update[0].title).toBe("test")   
+        expect(list_todo_before_update[0].completed).toBe(false)   
+        expect(list_todo_before_update[0].completedAt).toBe("2022-01-20T10:32:50.952Z")
+
+        const response = await request(app.callback()).put(baseUrl + "/" + id).send("title=new_test").send("completed=true")
+        const list_todo_after_update = await db.collection("todos").find(query).toArray()
+
+        const maybe_new_updatedAt = (list_todo_before_update[0].updatedAt < list_todo_after_update[0].updatedAt)
+
+        expect(response.statusCode).toBe(200)   
+        expect(list_todo_after_update[0].title).toBe("new_test")   
+        expect(list_todo_after_update[0].completed).toBe(true)  
+        //expect(maybe_new_updatedAt).toBe(true)    
+    })
+    test("should respond with a 200 status code & only title updated", async () => {
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        const test_elem = await db.collection("todos").insertOne(testTodo)
+        const id = test_elem.insertedId.toString()
+
+        const list_todo_before_update = await db.collection("todos").find(query).toArray()
+        expect(list_todo_before_update[0].title).toBe("test")   
+        expect(list_todo_before_update[0].completed).toBe(false)   
+        expect(list_todo_before_update[0].completedAt).toBe("2022-01-20T10:32:50.952Z")
+
+        const response = await request(app.callback()).put(baseUrl + "/" + id).send("title=new_test")
+        const list_todo_after_update = await db.collection("todos").find(query).toArray()
+
+        const maybe_new_updatedAt = (list_todo_before_update[0].updatedAt < list_todo_after_update[0].updatedAt)
+
+        expect(response.statusCode).toBe(200)   
+        expect(list_todo_after_update[0].title).toBe("new_test")   
+        expect(list_todo_after_update[0].completed).toBe(false)  
+        //expect(maybe_new_updatedAt).toBe(true)    
+    })
+    test("should respond with a 200 status code & only completed updated", async () => {
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        const test_elem = await db.collection("todos").insertOne(testTodo)
+        const id = test_elem.insertedId.toString()
+
+        const list_todo_before_update = await db.collection("todos").find(query).toArray()
+        expect(list_todo_before_update[0].title).toBe("test")   
+        expect(list_todo_before_update[0].completed).toBe(false)   
+        expect(list_todo_before_update[0].completedAt).toBe("2022-01-20T10:32:50.952Z")
+
+        const response = await request(app.callback()).put(baseUrl + "/" + id).send("completed=true")
+        const list_todo_after_update = await db.collection("todos").find(query).toArray()
+
+        const maybe_new_updatedAt = (list_todo_before_update[0].updatedAt < list_todo_after_update[0].updatedAt)
+
+        expect(response.statusCode).toBe(200)   
+        expect(list_todo_after_update[0].title).toBe("test")   
+        expect(list_todo_after_update[0].completed).toBe(true)  
+        //expect(maybe_new_updatedAt).toBe(true)    
+    })
+
+    test("should respond with a 422 status code & no changes", async () => {
+        const testTodo = {title: "test", completed: false, completedAt: "2022-01-20T10:32:50.952Z", updatedAt: "2022-01-20T10:32:50.952Z"}
+        const db = getDB()
+        const test_elem = await db.collection("todos").insertOne(testTodo)
+        const id = test_elem.insertedId.toString()
+
+        const list_todo_before_update = await db.collection("todos").find(query).toArray()
+        expect(list_todo_before_update[0].title).toBe("test")   
+        expect(list_todo_before_update[0].completed).toBe(false)   
+        expect(list_todo_before_update[0].completedAt).toBe("2022-01-20T10:32:50.952Z")
+
+        const response = await request(app.callback()).put(baseUrl + "/" + id)
+        const list_todo_after_update = await db.collection("todos").find(query).toArray()
+
+        const no_new_updatedAt = (list_todo_before_update[0].updatedAt == list_todo_after_update[0].updatedAt)
+
+        expect(response.statusCode).toBe(422)   
+        expect(list_todo_after_update[0].title).toBe("test")   
+        expect(list_todo_after_update[0].completed).toBe(false)  
+        //expect(no_new_updatedAt).toBe(true)    
     })
 })
