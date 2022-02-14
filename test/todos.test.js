@@ -1,5 +1,7 @@
 const { ObjectId } = require("mongodb")
 const request = require("supertest")
+const { query } = require("koa/lib/request")
+
 const app = require("../src/app")
 const { connectToDB, closeConnection, getDB } = require("../src/database")
 
@@ -87,14 +89,15 @@ describe("DELETE /todos", () => {
         const test_elem = await db.collection("todos").insertOne(testTodo)
         const id = test_elem.insertedId.toString()
 
-        const response = await request(app.callback()).delete(baseUrl + "/" + id)
+        const list_todo_before_delete = await db.collection("todos").find(query).toArray()
+        expect(list_todo_before_delete[0].title).toBe("test")   
 
-        const list_todo = await db.collection("todos").find(query).toArray()
+        const response = await request(app.callback()).delete(baseUrl + "/" + id)
+        const list_todo_after_delete = await db.collection("todos").find(query).toArray()
 
         console.log(response.statusCode)
-        console.log(list_todo[0].title)
 
         expect(response.statusCode).toBe(200)   
-        expect(list_todo.length).toBe(0)   
+        expect(list_todo_after_delete.length).toBe(0)   
     })
 })
