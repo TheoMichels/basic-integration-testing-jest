@@ -1,5 +1,4 @@
 const Router = require("koa-router")
-const { ObjectId } = require("mongodb")
 
 const router = Router({ prefix: "/todos" })
 const { getDB } = require("./database")
@@ -8,7 +7,7 @@ router
     .get("/", listTodos)
     .post("/", createTodo)
     .put("/:id", updateTodo)
-    .del("/test", deleteTodo)
+    .del("/:id", deleteTodo)
 
 async function listTodos (ctx) {
     const todos = await getDB()
@@ -56,7 +55,4 @@ async function updateTodo (ctx) {
     // TODO
 }
 
-
-createTodo()
-
-//module.exports = router
+module.exports = router

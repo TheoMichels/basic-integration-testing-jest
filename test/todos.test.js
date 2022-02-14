@@ -1,4 +1,3 @@
-const { query } = require("koa/lib/request")
 const { ObjectId } = require("mongodb")
 const request = require("supertest")
 const app = require("../src/app")
