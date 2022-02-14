@@ -1,3 +1,4 @@
+const { query } = require("koa/lib/request")
 const { ObjectId } = require("mongodb")
 const request = require("supertest")
 const app = require("../src/app")
@@ -52,9 +53,21 @@ describe("GET /todos", () => {
 
 describe("POST /todos", () => {
     test("should respond with a 200 status code & good parameters", async () => {
-        const response = await (await request(app.callback()).post(baseUrl).send('title=Do homework'))
+        const title = "Do homework"
+        const response = await request(app.callback()).post(baseUrl).send("title=" + title)
+        const responseBody = response.body
+
+        const db = getDB()
+        const list_todo = await db.collection("todos").find(query).toArray()
+
         console.log(response.statusCode)
+
         expect(response.statusCode).toBe(200)   
+        expect(responseBody).toBeDefined()
+        expect(responseBody.id).toBeDefined()
+
+        expect(list_todo.length).toBe(1)
+        expect(list_todo[0].title).toBe(title)
     })
     test("should respond with a 422 status code when no title found", async () => {
         const response = await request(app.callback()).post(baseUrl)
@@ -62,7 +75,7 @@ describe("POST /todos", () => {
         expect(response.statusCode).toBe(422)   
     })
     test("should respond with a 422 status code when empty title found", async () => {
-        const response = await request(app.callback()).post(baseUrl).send('title=')
+        const response = await request(app.callback()).post(baseUrl).send("title=")
         console.log(response.statusCode)
         expect(response.statusCode).toBe(422)   
     })
