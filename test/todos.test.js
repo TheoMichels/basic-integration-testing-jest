@@ -49,3 +49,21 @@ describe("GET /todos", () => {
         expect(todoToTest.completed).toBe(false)
     })
 })
+
+describe("POST /todos", () => {
+    test("should respond with a 200 status code & good parameters", async () => {
+        const response = await (await request(app.callback()).post(baseUrl).send('title=Do homework'))
+        console.log(response.statusCode)
+        expect(response.statusCode).toBe(200)   
+    })
+    test("should respond with a 422 status code when no title found", async () => {
+        const response = await request(app.callback()).post(baseUrl)
+        console.log(response.statusCode)
+        expect(response.statusCode).toBe(422)   
+    })
+    test("should respond with a 422 status code when empty title found", async () => {
+        const response = await request(app.callback()).post(baseUrl).send('title=')
+        console.log(response.statusCode)
+        expect(response.statusCode).toBe(422)   
+    })
+})

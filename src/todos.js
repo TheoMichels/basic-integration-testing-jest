@@ -22,7 +22,7 @@ async function listTodos (ctx) {
 async function createTodo (ctx) {
     const title = ctx.request.body.title
 
-    if (title === null || title === undefined) {
+    if (title === null || title === undefined || title == "") {
         ctx.status = 422
         ctx.body = { errorMsg: "Missing parameter 'title'" }
     } else {
